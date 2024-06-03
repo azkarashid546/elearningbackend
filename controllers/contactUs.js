@@ -44,7 +44,7 @@ if(contact){
             data
           );
             await sendMail({
-              email: "azkarashid196@gmail.com",
+              email: "azkarashid196@gmail.com",//you can use process.env.SMTP_MAIL
               subject: "Message received",
               template: "message-contact-us.ejs",
               data,
