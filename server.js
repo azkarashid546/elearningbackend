@@ -16,6 +16,7 @@ const passport = require("passport");
 const http = require("http");
 const initSocketServer = require('./socketServer');
 const UploadCertifcateRouter = require('./routes/uploadCertifcate');
+const contactRouter = require('./routes/contactUs');
 
 const app = express();
 
@@ -48,7 +49,7 @@ cloudinary.config({
 });
 
 // Available Routes
-app.use('/api/v1', router, CourseRouter, orderRouter, notificationRouter, analyticsRouter, layoutRouter, UploadCertifcateRouter);
+app.use('/api/v1', router, CourseRouter, orderRouter, notificationRouter, analyticsRouter, layoutRouter, UploadCertifcateRouter,contactRouter);
 
 app.use(ErrorMiddleware);
 
