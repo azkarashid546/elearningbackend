@@ -140,6 +140,7 @@ const loginUser = catchAsyncErrors(async (req, res, next) => {
       );
     }
     const user = await User.findOne({ email }).select("+password");
+    // console.log("user when logging ",user)   //! .select("+password"); it will also send password but we will never send password to the frontend
     if (!user) {
       return next(new ErrorHandler("Invalid email or password", 400));
     }
