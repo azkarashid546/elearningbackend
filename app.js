@@ -5,7 +5,7 @@ const cookieParser = require("cookie-parser");
 require("dotenv").config()
 
 
-
+https://elearning-three-rho.vercel.app/
 // body parser
 app.use(express.json({ limit: "50mb" }))
 
@@ -14,7 +14,7 @@ app.use(cookieParser())
 
 // cors
 app.use(cors({
-    origin: '*',
+    origin: 'https://elearning-three-rho.vercel.app',
 }))
 
 // testing api

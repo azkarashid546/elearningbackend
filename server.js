@@ -42,7 +42,7 @@ app.use(cookieParser());
 
 app.use(
   cors({
-    origin: '*',
+    origin: 'https://elearning-three-rho.vercel.app',
     credentials: true,
   })
 );
