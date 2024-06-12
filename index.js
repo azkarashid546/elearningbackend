@@ -37,7 +37,7 @@ app.use(express.json({ limit: "50mb" }));
 app.use(cookieParser());
 
 app.use(cors({
-    origin: 'http://localhost:3000', // or your front-end URL
+    origin: '*', // or your front-end URL
     credentials: true,
 }));
 
@@ -49,7 +49,7 @@ cloudinary.config({
 });
 
 // Available Routes
-app.use('/api/v1', router, CourseRouter, orderRouter, notificationRouter, analyticsRouter, layoutRouter, UploadCertifcateRouter,contactRouter);
+app.use('/api/v1', router, CourseRouter, orderRouter, notificationRouter, analyticsRouter, layoutRouter, UploadCertifcateRouter, contactRouter);
 
 app.use(ErrorMiddleware);
 

@@ -3,7 +3,7 @@ const { Server } = require("socket.io");
 const initSocketServer = (server) => {
     const io = new Server(server, {
         cors: {
-            origin: "http://localhost:3000", // or your front-end URL
+            origin: '*', // or your front-end URL
             methods: ["GET", "POST"],
             credentials: true,
         },

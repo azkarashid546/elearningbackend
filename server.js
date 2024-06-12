@@ -16,7 +16,7 @@ const passport = require('passport');
 const http = require('http');
 const initSocketServer = require('./socketServer');
 const UploadCertifcateRouter = require('./routes/uploadCertifcate');
-const contactRouter = require('./routes/contactus');
+const contactRouter = require('./routes/contactUs');
 const chatRouter = require('./routes/chatgpt');
 
 
@@ -42,7 +42,7 @@ app.use(cookieParser());
 
 app.use(
   cors({
-    origin: 'http://localhost:3000',
+    origin: '*',
     credentials: true,
   })
 );
