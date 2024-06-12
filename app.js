@@ -19,7 +19,7 @@ app.use(cors({
 
 // testing api
 
-app.get("/", (req, res, next ) => {
+app.get("/get", (req, res, next ) => {
 res.status(200).json({
     success : true,
     message : "Api is working"

@@ -37,8 +37,7 @@ router.get("/get-users", isAuthenticated, authorizeRoles("admin" ), getAllUsers)
 router.get("/get-users-instructor", isAuthenticated, authorizeRoles("instructor"), getAllUsers);
 router.put("/update-user-role", isAuthenticated, authorizeRoles("admin"), updateUserRole);
 router.delete("/delete-user/:id", isAuthenticated, authorizeRoles("admin"), deleteUser);
-router.get("/get-user-complete-course", isAuthenticated, authorizeRoles("instructor"), getUserCourseDataCompletionProgress);
-router.get("/update-course-progress", isAuthenticated, updateCourseProgress);
+
 
 module.exports = router;
 

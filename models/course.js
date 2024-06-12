@@ -23,17 +23,18 @@ const CommentSchema = new Schema(
   {
     user: Object,
     question: String,
+   
     questionReplies: [Object],
   },
   { timestamps: true }
 );
 
 const CourseDataSchema = new Schema({
-  vedioUrl: String, // Note: changed from vedioUrl to videoUrl
+  vedioUrl: String, 
   title: String,
-  vedioSection: String, // Note: changed from vedioSection to videoSection
+  vedioSection: String, 
   description: String,
-  vedioLength: Number, // Note: changed from vedioLength to videoLength
+  vedioLength: Number,
   videoPlayer: String,
   links: [LinksSchema],
   suggestion: String,

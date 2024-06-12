@@ -17,6 +17,13 @@ const createOrder = catchAsyncErrors(async (req, res, next) => {
       // Extract necessary data from the request body
       const { courseId, payment_info } = req.body;
 
+      if (req.user?.role !== "user") {
+        return res.status(403).json({
+          success: false,
+          message: "Admins and instructors cannot purchase courses",
+        });
+      }
+    
       // Find the instructor with the role "instructor"
       const instructor = await User.findOne({ role: "instructor" });
       if (!instructor) {
@@ -29,9 +36,7 @@ const createOrder = catchAsyncErrors(async (req, res, next) => {
 
       // Check if the user role is "user"
       const user = await User.findById(req.user?._id);
-      if (user.role !== 'user') {
-          return next(new ErrorHandler("Only users with the role 'user' can create orders", 403));
-      }
+      
 
       // Check payment authorization if payment_info is provided
       if (payment_info && payment_info.id) {

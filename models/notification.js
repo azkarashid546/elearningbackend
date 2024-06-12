@@ -1,27 +1,40 @@
-const bcrypt = require("bcryptjs");
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
-require("dotenv").config();
-const jwt = require("jsonwebtoken");
-
-
 
 const NotificationSchema = new Schema({
-    title : {
-        type : String,
-        required : true
-    },
-    message : {
-        type : String,
-        required : true
-    },
-    status : {
-        type : String,
-        required : true,
-        default : "unread"
-    }
-  },{timestamps : true});
+  title: {
+    type: String,
+    required: true,
+  },
+  message: {
+    type: String,
+    required: true,
+  },
+  status: {
+    type: String,
+    required: true,
+    default: "unread", 
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now, 
+  },
+  user: {
+    type: Schema.Types.ObjectId,
+    ref: "User", 
+    required: true,
+  },
+  instructor: {
+    type: Schema.Types.ObjectId,
+    ref: "User", 
+    required: true,
+  },
+  course: {
+    type: Schema.Types.ObjectId,
+    ref: "Course",
+  },
+});
 
+const Notification = mongoose.model("Notification", NotificationSchema);
 
-  const Notification = mongoose.model("notification", NotificationSchema);
-  module.exports = Notification;
+module.exports = Notification;

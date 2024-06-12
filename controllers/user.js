@@ -140,7 +140,6 @@ const loginUser = catchAsyncErrors(async (req, res, next) => {
       );
     }
     const user = await User.findOne({ email }).select("+password");
-    // console.log("user when logging ",user)   //! .select("+password"); it will also send password but we will never send password to the frontend
     if (!user) {
       return next(new ErrorHandler("Invalid email or password", 400));
     }
@@ -219,9 +218,11 @@ const updateAccessToken = catchAsyncErrors(async (req, res, next) => {
 // get user info
 const getUserInfo = catchAsyncErrors(async (req, res, next) => {
   try {
-    console.log(req.user)
-    const userId = req.user?._id;
-    getUserById(userId, res);
+    const user = await User.findById(req.user._id);
+    console.log(user)
+     res.status(200).json({
+      success: true,
+      user})
   } catch (error) {
     return next(new ErrorHandler(error.message, 400));
   }
@@ -466,71 +467,6 @@ const deleteUser = catchAsyncErrors(async (req, res, next) => {
   }
 });
 
-const updateCourseProgress = async (req, res) => {
-  try {
-    // Extract courseId, videoId, and progress from the request body
-    const { courseId, vedioUrl, progress } = req.body;
-
-    // Find the course by courseId
-    const course = await Course.findById(courseId);
-
-    if (!course) {
-      return res.status(404).json({ success: false, message: 'Course not found' });
-    }
-
-    // Update the progress of the video with the specified videoId
-    const videoIndex = course.videos.findIndex(video => video._id === vedioUrl);
-    if (videoIndex === -1) {
-      return res.status(404).json({ success: false, message: 'Video not found in course' });
-    }
-
-    // Update the progress of the video
-    course.videos[videoIndex].progress = progress;
-
-    // Save the updated course
-    await course.save();
-
-    // Send a success response
-    res.status(200).json({ success: true, message: 'Course progress updated successfully' });
-  } catch (error) {
-    // Handle errors
-    console.error('Error updating course progress:', error);
-    res.status(500).json({ success: false, message: 'Internal server error' });
-  }
-};
-const getCourseDataCompletionProgress = (userId, courseId) => {
-  return User.findById(userId)
-    .then(user => {
-      if (!user) {
-        throw new Error('User not found');
-      }
-      return user.getCourseDataCompletionProgress(courseId);
-    })
-    .catch(error => {
-      throw new Error(error.message);
-    });
-};
-
-// Example usage in a controller function
-// Example usage in a controller function
-const getUserCourseDataCompletionProgress = async (req, res, next) => {
-  try {
-    const userId = req.query.userId; // Extract user ID from query parameters
-    const courseId = req.query.courseId; // Extract course ID from query parameters
-
-    if (!userId || !courseId) {
-      throw new Error('User ID or Course ID not provided');
-    }
-
-    // Query the database or perform necessary operations to get completion progress
-    const completionProgress = await getCourseDataCompletionProgress(userId, courseId);
-
-    res.status(200).json({ success: true, completionProgress });
-  } catch (error) {
-    next(error); // Forward the error to the error handling middleware
-  }
-};
-
 
 
 module.exports = {
@@ -548,7 +484,4 @@ module.exports = {
   getAllUsers,
   updateUserRole,
   deleteUser,
-  getUserCourseDataCompletionProgress,
-  getAllUsersInstructor,
-  updateCourseProgress,
 };

@@ -1,5 +1,8 @@
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
-const {getAllCoursesService, getAllInstructorCoursesService} = require("../services/course");
+const {
+  getAllCoursesService,
+  getAllInstructorCoursesService,
+} = require("../services/course");
 const ErrorHandler = require("../utils/ErrorHandler");
 const cloudinary = require("cloudinary");
 const Course = require("../models/course");
@@ -11,17 +14,20 @@ const path = require("path");
 const Notification = require("../models/notification");
 const axios = require("axios");
 
-const { updateProfilePicture, updateUserInfo, updatePassword } = require("./user");
+const {
+  updateProfilePicture,
+  updateUserInfo,
+  updatePassword,
+} = require("./user");
 const UserVideoHistory = require("../models/userVedioHistory");
 const User = require("../models/user");
-
 
 // upload course
 
 const uploadCourse = catchAsyncErrors(async (req, res, next) => {
   try {
     const data = req.body;
-    
+
     const instructor = await User.findOne({ role: "instructor" });
 
     if (!instructor) {
@@ -56,15 +62,13 @@ const uploadCourse = catchAsyncErrors(async (req, res, next) => {
   }
 });
 
-
-
 // edit course
 const editCourse = catchAsyncErrors(async (req, res, next) => {
   try {
     const data = req.body;
     const thumbnail = data.thumbnail;
     const courseId = req.params.id;
-   const courseData = await Course.findById(courseId)
+    const courseData = await Course.findById(courseId);
 
     if (thumbnail && !thumbnail.startsWith("https")) {
       await cloudinary.v2.uploader.destroy(thumbnail.public_id);
@@ -76,11 +80,11 @@ const editCourse = catchAsyncErrors(async (req, res, next) => {
         url: myCloud.secure_url,
       };
     }
-    if(thumbnail.startsWith("https")){
-      data.thumbnail ={
-        public_id : courseData?.thumbnail.public_id,
-        url : courseData?.thumbnail.url
-      }
+    if (thumbnail.startsWith("https")) {
+      data.thumbnail = {
+        public_id: courseData?.thumbnail.public_id,
+        url: courseData?.thumbnail.url,
+      };
     }
     const course = await Course.findByIdAndUpdate(
       courseId,
@@ -115,7 +119,7 @@ const getSingleCourse = catchAsyncErrors(async (req, res, next) => {
         "-courseData.vedioUrl -courseData.suggestion -courseData.questions -courseData.links"
       );
       console.log("hitting mongodb");
-      await redis.set(courseId, JSON.stringify(course), 'EX', 604800);
+      await redis.set(courseId, JSON.stringify(course), "EX", 604800);
 
       res.status(200).json({
         success: true,
@@ -127,21 +131,18 @@ const getSingleCourse = catchAsyncErrors(async (req, res, next) => {
   }
 });
 
-
 // get all courses --- without purchasing
 const getAllCourses = catchAsyncErrors(async (req, res, next) => {
   try {
-   
-      const courses = await Course.find().select(
-        "-courseData.vedioUrl -courseData.suggestion -courseData.questions -courseData.links"
-      );
-      console.log("hitting mongodb");
-    
-      res.status(200).json({
-        success: true,
-        courses,
-      });
-    
+    const courses = await Course.find().select(
+      "-courseData.vedioUrl -courseData.suggestion -courseData.questions -courseData.links"
+    );
+    console.log("hitting mongodb");
+
+    res.status(200).json({
+      success: true,
+      courses,
+    });
   } catch (error) {
     return next(new ErrorHandler(error.message, 400));
   }
@@ -161,11 +162,17 @@ const getCourseByUser = catchAsyncErrors(async (req, res, next) => {
     // Retrieve the requested course ID from the URL parameters
     const courseId = req.params.id;
 
-    // Check if the user has the requested course in their purchased courses
-    const hasCourse = user.courses.some(course => course._id.toString() === courseId);
+    if (user.role === "user") {
+      // Check if the user has the requested course in their purchased courses
+      const hasCourse = user.courses.some(
+        (course) => course._id.toString() === courseId
+      );
 
-    if (!hasCourse) {
-      return next(new ErrorHandler("You are not eligible to access this course", 403));
+      if (!hasCourse) {
+        return next(
+          new ErrorHandler("You are not eligible to access this course", 403)
+        );
+      }
     }
 
     // Find the course by ID
@@ -189,8 +196,6 @@ const getCourseByUser = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler(error.message, 500));
   }
 });
-
-
 
 const getAllCoursesByUser = catchAsyncErrors(async (req, res, next) => {
   try {
@@ -229,51 +234,66 @@ const getAllCoursesByUser = catchAsyncErrors(async (req, res, next) => {
 const addQuestion = catchAsyncErrors(async (req, res, next) => {
   try {
     const { question, courseId, contentId } = req.body;
+    // Find the course by ID
     const course = await Course.findById(courseId);
+    if (!course) {
+      return next(new ErrorHandler("Course not found", 404));
+    }
+
+    // Validate the content ID
     if (!mongoose.Types.ObjectId.isValid(contentId)) {
       return next(new ErrorHandler("Invalid Content Id", 400));
     }
 
-    const courseContent = course?.courseData?.find((item) =>
+    // Find the course content by contentId
+    const courseContent = course.courseData.find((item) =>
       item._id.equals(contentId)
     );
     if (!courseContent) {
       return next(new ErrorHandler("Invalid Content Id", 400));
     }
 
-    // create a new questions object
+    // Create a new question object
     const newQuestion = {
-      user: req.user,
+      user: req.user, // Include user ID if logged in
       question,
+      avatar : req.user.avatar,
       questionReplies: [],
     };
 
-    // add this question to out course content
+    // Add the new question to the course content
     courseContent.questions.push(newQuestion);
 
+    // Find the instructor who created the course
+    const instructor = await User.findById(course.instructor);
+    if (!instructor || instructor.role !== "instructor") {
+      return next(
+        new ErrorHandler("Instructor not found or invalid role", 404)
+      );
+    }
+
+    // Create a notification for the instructor
     await Notification.create({
-      user: req.user?._id,
-      title: "New Question Recieved",
-      message: `You have a new question in ${courseContent?.title}`,
+      course: course._id,
+      instructor: course.instructor,
+      user: req.user._id,
+      message: `New Question Received for ${instructor.email} in ${courseContent.title}`,
+      title: "New Question Received",
     });
+    //  if(admin) {
+    //   await Notification.create({
+    //     user: admin._id,
+    //     title: "New Question Received",
+    //     message: `You have a new question in ${courseContent.title}`,
+    //   });
+    //  }
 
-    // if (req.body.avatar) {
-    //   req.body.user = req.user;
-    //   await updateProfilePicture(req, res, next);
-    // }
-    // if (req.body.name) {
-    //   req.body.user = req.user;
-    //   await updateUserInfo(req, res, next);
-    // }
-    // if (req.body.password) {
-    //   req.body.user = req.user;
-    //   await updatePassword(req, res, next);
-    // }
-    // save the updatyed course
+    // Save the updated course
+    await course.save();
 
+    // Clear cache for the course (optional)
+    await redis.del(courseId);
 
-    await course?.save();
-    await redis.set(courseId, JSON.stringify(course), "Ex" , 604800)
     res.status(200).json({
       success: true,
       course,
@@ -287,6 +307,7 @@ const addQuestion = catchAsyncErrors(async (req, res, next) => {
 const addAnswer = catchAsyncErrors(async (req, res, next) => {
   try {
     const { answer, courseId, contentId, questionId } = req.body;
+
     const course = await Course.findById(courseId);
     if (!mongoose.Types.ObjectId.isValid(contentId)) {
       return next(new ErrorHandler("Invalid Content Id", 400));
@@ -306,60 +327,36 @@ const addAnswer = catchAsyncErrors(async (req, res, next) => {
     if (!question) {
       return next(new ErrorHandler("Invalid Question Id", 400));
     }
-    // create a new answer object
+
+    // Create a new answer object
     const newAnswer = {
       user: req.user,
       answer,
-      createdAt : new Date().toISOString(),
-      updatedAt : new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
 
-    // add this answer to our course content
+    // Add this answer to our course content
     question.questionReplies.push(newAnswer);
 
-    // if (req.body.avatar) {
-    //   req.body.user = req.user;
-    //   await updateProfilePicture(req, res, next);
-    // }
-    // if (req.body.name) {
-    //   req.body.user = req.user;
-    //   await updateUserInfo(req, res, next);
-    // }
-    // if (req.body.password) {
-    //   req.body.user = req.user;
-    //   await updatePassword(req, res, next);
-    // }
- 
     await course?.save();
-    await redis.set(courseId, JSON.stringify(course), "Ex" , 604800)
-    if (req.user?._id === question.user._id) {
-      // create a notification
+    await redis.set(courseId, JSON.stringify(course), "EX", 604800);
 
-      await Notification.create({
-        user: req.user?._id,
-        title: "New Question Reply Recevied",
-        message: `You have a new question reply in ${courseContent.title}`,
-      });
-    } else {
-      const data = {
-        name: question.user.name,
-        title: courseContent.title,
-      };
-      const html = await ejs.renderFile(
-        path.join(__dirname, "../mails/question-reply.ejs"),
-        data
+    const instructor = await User.findById(course.instructor);
+    if (!instructor || instructor.role !== "instructor") {
+      return next(
+        new ErrorHandler("Instructor not found or invalid role", 404)
       );
-      try {
-        await sendMail({
-          email: question.user.email,
-          subject: "Question Reply",
-          template: "question-reply.ejs",
-          data,
-        });
-      } catch (error) {
-        return next(new ErrorHandler(error.message, 400));
-      }
     }
+
+    await Notification.create({
+      course: course._id,
+      instructor: course.instructor,
+      user: req.user._id,
+      title: "New Reply to Student Question", // Adjust title as needed
+      message: `A new reply has been added to a student question in ${courseContent.title}`,
+    });
+
     res.status(200).json({
       success: true,
       course,
@@ -368,16 +365,13 @@ const addAnswer = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler(error.message, 400));
   }
 });
-
 // add review in course
 const addReview = catchAsyncErrors(async (req, res, next) => {
   try {
-    const userCourseList = req.user?.courses;
+    const user = await User.findById(req.user._id).populate("courses");
     const courseId = req.params.id;
 
-    // check if courseId already exists in userCourseList based on _id
-
-    const courseExists = userCourseList?.some(
+    const courseExists = user.courses.some(
       (course) => course._id.toString() === courseId.toString()
     );
     if (!courseExists) {
@@ -385,11 +379,17 @@ const addReview = catchAsyncErrors(async (req, res, next) => {
         new ErrorHandler("You are not eligible to access this course", 404)
       );
     }
+
     const course = await Course.findById(courseId);
-    const { review, rating } = req.body;
+    const { review, rating, hasQuestion, question } = req.body;
+
+    // Add question if provided
+    if (hasQuestion) {
+      await addQuestionToCourse(course._id, question); // Call a helper function
+    }
 
     const reviewData = {
-      user: req.user,
+      user : req.user,
       comment: review,
       rating,
     };
@@ -401,28 +401,32 @@ const addReview = catchAsyncErrors(async (req, res, next) => {
       avg += rev.rating;
     });
     if (course) {
-      course.ratings = avg / course.review.length; // 9 / 2 = 4.5 ratings
+      course.ratings = avg / course.review.length;
     }
-    // if (req.body.avatar) {
-    //   req.body.user = req.user;
-    //   await updateProfilePicture(req, res, next);
-    // }
-    // if (req.body.name) {
-    //   req.body.user = req.user;
-    //   await updateUserInfo(req, res, next);
-    // }
-    // if (req.body.password) {
-    //   req.body.user = req.user;
-    //   await updatePassword(req, res, next);
-    // }
+
     await course?.save();
-    await redis.set(courseId, JSON.stringify(course), "Ex" , 604800)
-    // create Notification
+    await redis.set(courseId, JSON.stringify(course), "Ex", 604800);
+    const instructor = await User.findById(course.instructor);
+    if (!instructor || instructor.role !== "instructor") {
+      return next(
+        new ErrorHandler("Instructor not found or invalid role", 404)
+      );
+    }
+    // Optional Notification for Review
     await Notification.create({
-      user: req.user?._id,
+      course: course._id,
+      instructor: course.instructor,
+      user: req.user._id,
       title: "New Review Received",
-      message: `${req.user?.name} has given a review in ${course?.name}`,
+      message: `${req.user.name} has given a review in ${course.name}`,
     });
+    // if(admin){
+    //   await Notification.create({
+    //     user: admin._id,
+    //     title: "New Review Received",
+    //     message: `${req.user.name} has given a review in ${course.name}`,
+    //   });
+    // }
 
     res.status(200).json({
       success: true,
@@ -451,8 +455,8 @@ const addReplyReview = catchAsyncErrors(async (req, res, next) => {
     const replyData = {
       user: req.user,
       comment,
-      createdAt : new Date().toISOString(),
-      updatedAt : new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
     if (!review.commentReplies) {
       review.commentReplies = [];
@@ -471,9 +475,9 @@ const addReplyReview = catchAsyncErrors(async (req, res, next) => {
     //   req.body.user = req.user;
     //   await updatePassword(req, res, next);
     // }
- 
+
     await course.save();
-    await redis.set(courseId, JSON.stringify(course), "Ex" , 604800)
+    await redis.set(courseId, JSON.stringify(course), "Ex", 604800);
     res.status(200).json({
       success: true,
       course,
@@ -484,22 +488,22 @@ const addReplyReview = catchAsyncErrors(async (req, res, next) => {
 });
 
 // get all courses --- only for admin
-const getAllCoursesAdmin = catchAsyncErrors(async(req, res, next) => {
+const getAllCoursesAdmin = catchAsyncErrors(async (req, res, next) => {
   try {
-    getAllCoursesService(res)
+    getAllCoursesService(res);
   } catch (error) {
     return next(new ErrorHandler(error.message, 400));
   }
-})
-const getAllCoursesInstructor = catchAsyncErrors(async(req, res, next) => {
+});
+const getAllCoursesInstructor = catchAsyncErrors(async (req, res, next) => {
   try {
-    getAllInstructorCoursesService(res)
+    getAllInstructorCoursesService(res);
   } catch (error) {
     return next(new ErrorHandler(error.message, 400));
   }
-})
+});
 // Delete Course --- only for Admin
-const deleteCourse = catchAsyncErrors(async(req, res, next) => {
+const deleteCourse = catchAsyncErrors(async (req, res, next) => {
   try {
     const { id } = req.params;
     const course = await Course.findById(id);
@@ -513,14 +517,12 @@ const deleteCourse = catchAsyncErrors(async(req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: "Course deleted successfully"
+      message: "Course deleted successfully",
     });
-
   } catch (error) {
     return next(new ErrorHandler(error.message, 400));
   }
 });
-
 
 const generateVideoUrl = catchAsyncErrors(async (req, res, next) => {
   try {
@@ -534,10 +536,10 @@ const generateVideoUrl = catchAsyncErrors(async (req, res, next) => {
       { ttl: 300 },
       {
         headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          Authorization: `Apisecret ${process.env.VDOCIPHER_API_SECRET}`
-        }
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Apisecret ${process.env.VDOCIPHER_API_SECRET}`,
+        },
       }
     );
 
@@ -548,8 +550,6 @@ const generateVideoUrl = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler(error.message, error.response?.status || 500));
   }
 });
-
-
 
 module.exports = {
   uploadCourse,
@@ -565,5 +565,5 @@ module.exports = {
   deleteCourse,
   generateVideoUrl,
   getAllCoursesByUser,
-  getAllCoursesInstructor
+  getAllCoursesInstructor,
 };

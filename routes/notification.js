@@ -31,7 +31,7 @@ notificationRouter.put(
       "/update-notification-instructor/:id",
     
       isAuthenticated,
-      authorizeRoles("admin"),
+      authorizeRoles("instructor"),
       updateNotification
     );
 
