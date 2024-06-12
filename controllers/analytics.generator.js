@@ -1,6 +1,6 @@
 const ErrorHandler = require("../utils/ErrorHandler")
 const catchAsyncErrors = require("../middleware/catchAsyncErrors")
-const User = require("../models/user")
+const User = require("../models/user").default
 const { generateLast12MonthsData } = require("../utils/analytics.generator");
 const Course = require("../models/course")
 const Order = require("../models/order")
@@ -12,14 +12,14 @@ const getUserAnalytics = catchAsyncErrors(async (req, res, next) => {
     try {
         const users = await generateLast12MonthsData(User)
         res.status(200).json({
-            success : true,
+            success: true,
             users
         })
-        
+
     } catch (error) {
         return next(new ErrorHandler(error.message, 500))
     }
-    
+
 })
 
 const getCourseAnalytics = catchAsyncErrors(async (req, res, next) => {
@@ -27,14 +27,14 @@ const getCourseAnalytics = catchAsyncErrors(async (req, res, next) => {
     try {
         const courses = await generateLast12MonthsData(Course)
         res.status(200).json({
-            success : true,
+            success: true,
             courses
         })
-        
+
     } catch (error) {
         return next(new ErrorHandler(error.message, 500))
     }
-    
+
 })
 
 
@@ -43,14 +43,14 @@ const getOrderAnalytics = catchAsyncErrors(async (req, res, next) => {
     try {
         const orders = await generateLast12MonthsData(Order)
         res.status(200).json({
-            success : true,
+            success: true,
             orders
         })
-        
+
     } catch (error) {
         return next(new ErrorHandler(error.message, 500))
     }
-    
+
 })
 
-module.exports = {getUserAnalytics, getCourseAnalytics, getOrderAnalytics}
+module.exports = { getUserAnalytics, getCourseAnalytics, getOrderAnalytics }

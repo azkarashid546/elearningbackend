@@ -1,8 +1,8 @@
-const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
+import mongoose, { model } from "mongoose";
+import { genSalt, hash, compare } from "bcryptjs";
 const { Schema } = mongoose;
 require('dotenv').config();
-const jwt = require('jsonwebtoken');
+import { sign } from 'jsonwebtoken';
 
 const emailRegexPattern =
   /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -82,8 +82,8 @@ UserSchema.pre("save", async function (next) {
       return next();
     }
 
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
+    const salt = await genSalt(10);
+    this.password = await hash(this.password, salt);
 
     next();
   } catch (error) {
@@ -93,29 +93,29 @@ UserSchema.pre("save", async function (next) {
 
 // Sign access token
 UserSchema.methods.SignAccessToken = function () {
-  return jwt.sign({ id: this._id }, process.env.ACCESS_TOKEN || '', {
+  return sign({ id: this._id }, process.env.ACCESS_TOKEN || '', {
     expiresIn: "5m"
   });
 }
 
 // Sign refresh token
 UserSchema.methods.SignRefreshToken = function () {
-  return jwt.sign({ id: this._id }, process.env.REFRESH_TOKEN || '', {
+  return sign({ id: this._id }, process.env.REFRESH_TOKEN || '', {
     expiresIn: "3d"
   });
 }
 
 // Compare password 
-UserSchema.methods.comparePassword = async function(candidatePassword) {
+UserSchema.methods.comparePassword = async function (candidatePassword) {
   try {
-    return await bcrypt.compare(candidatePassword, this.password);
+    return await compare(candidatePassword, this.password);
   } catch (error) {
     throw new Error(error);
   }
 };
 
 // Method to check if a course is completed
-UserSchema.methods.getOverallProgress = function() {
+UserSchema.methods.getOverallProgress = function () {
   const totalCourses = this.completedCourses.length;
   const completedCourses = this.completedCourses.filter(course => course.progress === 100);
   const overallProgress = (completedCourses.length / totalCourses) * 100;
@@ -139,8 +139,8 @@ UserSchema.methods.getCourseDataCompletionProgress = function (courseId) {
   return progress;
 };
 
-const User = mongoose.model("User", UserSchema);
+const User = model("User", UserSchema);
 
-module.exports = User;
+export default User;
 
 

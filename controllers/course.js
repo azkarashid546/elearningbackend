@@ -20,7 +20,7 @@ const {
   updatePassword,
 } = require("./user");
 const UserVideoHistory = require("../models/userVedioHistory");
-const User = require("../models/user");
+const User = require("../models/user").default;
 
 // upload course
 
@@ -257,7 +257,7 @@ const addQuestion = catchAsyncErrors(async (req, res, next) => {
     const newQuestion = {
       user: req.user, // Include user ID if logged in
       question,
-      avatar : req.user.avatar,
+      avatar: req.user.avatar,
       questionReplies: [],
     };
 
@@ -389,7 +389,7 @@ const addReview = catchAsyncErrors(async (req, res, next) => {
     }
 
     const reviewData = {
-      user : req.user,
+      user: req.user,
       comment: review,
       rating,
     };

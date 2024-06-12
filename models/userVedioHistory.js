@@ -3,23 +3,23 @@ const bcrypt = require("bcryptjs");
 const { Schema } = mongoose;
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
-const User = require("./user")
+const User = require("./user").default
 const UserVideoHistorySchema = new Schema(
   {
     user: {
-      userId : String
+      userId: String
     },
-    course :{
-      courseId : String
+    course: {
+      courseId: String
     },
-    
+
     watched: {
       type: Boolean,
       default: false,
     },
     certificate: {
-        type: String // or Buffer, depending on how you store certificates
-      }
+      type: String // or Buffer, depending on how you store certificates
+    }
   },
   { timestamps: true }
 );

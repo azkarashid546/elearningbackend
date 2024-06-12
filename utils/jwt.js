@@ -1,5 +1,5 @@
 require('dotenv').config()
-const User = require("../models/user")
+const User = require("../models/user").default
 const redis = require("./redis")
 
 
@@ -10,17 +10,17 @@ const refreshTokenExpire = parseInt(process.env.REFRESH_TOKEN_EXPIRE || '1200', 
 
 // options for cookies
 const accessTokenOptions = {
-    expires : new Date(Date.now() + accessTokenExpire * 60 * 60 * 1000),
-    maxAge  :  accessTokenExpire * 60 * 60 * 1000,
-    httpOnly : true,
-    sameSite : 'lax',
-  
+    expires: new Date(Date.now() + accessTokenExpire * 60 * 60 * 1000),
+    maxAge: accessTokenExpire * 60 * 60 * 1000,
+    httpOnly: true,
+    sameSite: 'lax',
+
 }
 const refreshTokenOptions = {
-    expires : new Date(Date.now() + refreshTokenExpire * 24 * 60 * 60 * 1000),
-    maxAge  :  refreshTokenExpire * 24 * 60 * 60 *  1000,
-    httpOnly : true,
-    sameSite : 'lax',
+    expires: new Date(Date.now() + refreshTokenExpire * 24 * 60 * 60 * 1000),
+    maxAge: refreshTokenExpire * 24 * 60 * 60 * 1000,
+    httpOnly: true,
+    sameSite: 'lax',
 
 }
 
@@ -28,27 +28,27 @@ const refreshTokenOptions = {
 
 
 const sendToken = (user, statusCode, res) => {
-const accessToken = user.SignAccessToken()
-const refreshToken = user.SignRefreshToken()
+    const accessToken = user.SignAccessToken()
+    const refreshToken = user.SignRefreshToken()
 
 
-// upload session to redis
-redis.set(user._id, JSON.stringify(user))
+    // upload session to redis
+    redis.set(user._id, JSON.stringify(user))
 
 
-// only set secure to true in production
-if(process.env.NODE_ENV === 'production'){
-    accessTokenOptions.secure = true
+    // only set secure to true in production
+    if (process.env.NODE_ENV === 'production') {
+        accessTokenOptions.secure = true
+    }
+
+    // set cookies
+    res.cookie('access_token', accessToken, accessTokenOptions)
+    res.cookie('refresh_token', refreshToken, refreshTokenOptions)
+
+    res.status(statusCode).json({
+        success: true,
+        user,
+        accessToken,
+    })
 }
-
-// set cookies
-res.cookie('access_token', accessToken, accessTokenOptions)
-res.cookie('refresh_token', refreshToken, refreshTokenOptions)
-
-res.status(statusCode).json({
-    success : true,
-    user,
-    accessToken,
-})
-}
-module.exports = {sendToken, accessTokenOptions, refreshTokenOptions}
+module.exports = { sendToken, accessTokenOptions, refreshTokenOptions }

@@ -1,4 +1,4 @@
-const User = require('../models/user');
+const User = require('../models/user').default;
 const cloudinary = require("cloudinary"); // Importing v2 of Cloudinary
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 const ErrorHandler = require("../utils/ErrorHandler");

@@ -1,5 +1,5 @@
 const redis = require("../utils/redis");
-const User = require("../models/user");
+const User = require("../models/user").default;
 
 // get user by id
 const getUserById = async (id, res) => {
@@ -35,4 +35,4 @@ const updateUserRoleService = async (id, role) => {
   }
 };
 
-module.exports = {getUserById, getAllUsersService, updateUserRoleService};
+module.exports = { getUserById, getAllUsersService, updateUserRoleService };

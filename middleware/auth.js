@@ -1,7 +1,7 @@
 const catchAsyncErrors = require("./catchAsyncErrors");
 const ErrorHandler = require("../utils/ErrorHandler");
 const jwt = require("jsonwebtoken");
-const User = require("../models/user");
+const User = require("../models/user").default;
 const redis = require("../utils/redis");
 const { updateAccessToken } = require("../controllers/user");
 require("dotenv").config();
