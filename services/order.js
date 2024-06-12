@@ -1,14 +1,14 @@
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 const Order = require("../models/order");
-const User = require("../models/user");
+const User = require("../models/user").default;
 
 
 
 // Get All Courses
 const getAllOrderService = async (res) => {
-  const orders = await Order.find().sort({createdAt : -1})
+  const orders = await Order.find().sort({ createdAt: -1 })
   res.status(200).json({
-    success : true,
+    success: true,
     orders
   })
 }
@@ -25,14 +25,14 @@ const getAllOrderInstructorService = async (res) => {
 
   // Extract the instructorId from the found instructor
   const instructorId = instructor._id;
-  const orders = await Order.find({ instructor: instructorId }).sort({createdAt : -1})
+  const orders = await Order.find({ instructor: instructorId }).sort({ createdAt: -1 })
   res.status(200).json({
-    success : true,
+    success: true,
     orders
   })
 }
 const getUserOrdersForCourseService = async (userId, courseId, res) => {
-  const orders = await Order.find({ userId: userId, courseId: courseId,  }).sort({ createdAt: -1 });
+  const orders = await Order.find({ userId: userId, courseId: courseId, }).sort({ createdAt: -1 });
   res.status(200).json({
     success: true,
     orders
@@ -41,4 +41,4 @@ const getUserOrdersForCourseService = async (userId, courseId, res) => {
 
 
 
-module.exports = {getAllOrderService, getUserOrdersForCourseService, getAllOrderInstructorService};
+module.exports = { getAllOrderService, getUserOrdersForCourseService, getAllOrderInstructorService };

@@ -1,4 +1,4 @@
-const User = require("../models/user");
+const User = require("../models/user").default;
 
 const ErrorHandler = require("../utils/ErrorHandler");
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
@@ -43,11 +43,11 @@ const registerUser = catchAsyncErrors(async (req, res, next) => {
     };
     const activationToken = createActivationToken(user);
     console.log("Activation token: ", activationToken);
- 
+
     const activationCode = activationToken.activationCode;
     console.log("Activation code: ", activationCode);
     const data = { user: user.name, activationCode };
-   
+
     const html = await ejs.renderFile(
       path.join(__dirname, "../mails/activation-mail.ejs"),
       data
@@ -65,7 +65,7 @@ const registerUser = catchAsyncErrors(async (req, res, next) => {
         message: `Please check your email: ${user.email} to activation your account!`,
         activationToken: activationToken.token,
       };
-      
+
       res.json(responseData);
     } catch (error) {
       return next(new ErrorHandler(error.message, 400));
@@ -91,7 +91,7 @@ const createActivationToken = (user) => {
     }
   );
 
- 
+
 
   return { token, activationCode };
 };
@@ -100,7 +100,7 @@ const activateUser = catchAsyncErrors(async (req, res, next) => {
   try {
     const { token, activationCode } = req.body;
     console.log("Activate user request received", req.body);
-  
+
 
     const newUser = jwt.verify(token, process.env.ACTIVATION_SECRET);
     if (newUser.activationCode !== activationCode) {
@@ -124,7 +124,7 @@ const activateUser = catchAsyncErrors(async (req, res, next) => {
       sucess: true,
       user: user,
     };
-    
+
     res.json(responseData);
   } catch (error) {
     return next(new ErrorHandler(error.message, 400));
@@ -220,9 +220,10 @@ const getUserInfo = catchAsyncErrors(async (req, res, next) => {
   try {
     const user = await User.findById(req.user._id);
     console.log(user)
-     res.status(200).json({
+    res.status(200).json({
       success: true,
-      user})
+      user
+    })
   } catch (error) {
     return next(new ErrorHandler(error.message, 400));
   }

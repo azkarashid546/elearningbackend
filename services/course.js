@@ -1,6 +1,6 @@
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 const Course = require("../models/course");
-const User = require("../models/user");
+const User = require("../models/user").default;
 
 // Get All Courses
 const getAllCoursesService = async (res) => {
