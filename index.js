@@ -36,10 +36,7 @@ app.use(session({
 app.use(express.json({ limit: "50mb" }));
 app.use(cookieParser());
 
-app.use(cors({
-    origin: 'https://elearning-three-rho.vercel.app', // or your front-end URL
-    credentials: true,
-}));
+app.use(cors());
 
 // Cloudinary config
 cloudinary.config({
