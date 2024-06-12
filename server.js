@@ -15,7 +15,7 @@ const layoutRouter = require('./routes/layout');
 const passport = require('passport');
 const http = require('http');
 const initSocketServer = require('./socketServer');
-const uploadCertificateRouter = require('./routes/uploadCertificate');
+const uploadCertificateRouter = require('./routes/uploadCertifcate');
 const contactRouter = require('./routes/contactUs');
 const chatRouter = require('./routes/chatgpt');
 
@@ -61,6 +61,11 @@ app.use(
   contactRouter,
   chatRouter
 );
+
+app.get('/test-cors', (req, res) => {
+  res.send('CORS is working!');
+});
+
 
 app.use(ErrorMiddleware);
 
