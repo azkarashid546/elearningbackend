@@ -3,6 +3,7 @@ const session = require('express-session');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 require('dotenv').config();
+const connectToMongo = require('./utils/db');
 const ErrorMiddleware = require('./middleware/error');
 const userRouter = require('./routes/user');
 const courseRouter = require('./routes/course');
@@ -20,7 +21,7 @@ const chatRouter = require('./routes/chatgpt');
 
 const app = express();
 
-// connectToMongo();
+connectToMongo();
 
 app.use(
   session({
