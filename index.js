@@ -21,7 +21,7 @@ const chatRouter = require('./routes/chatgpt');
 
 const app = express();
 
-connectToMongo();
+// connectToMongo();
 
 app.use(
   session({
