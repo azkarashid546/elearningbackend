@@ -76,7 +76,6 @@ app.use(ErrorMiddleware);
 
 const server = http.createServer(app);
 
-initSocketServer(server);
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
