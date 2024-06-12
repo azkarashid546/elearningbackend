@@ -5,8 +5,8 @@ const cookieParser = require('cookie-parser');
 require('dotenv').config();
 const connectToMongo = require('./utils/db');
 const ErrorMiddleware = require('./middleware/error');
-const router = require('./routes/user');
-const CourseRouter = require('./routes/course');
+const userRouter = require('./routes/user');
+const courseRouter = require('./routes/course');
 const orderRouter = require('./routes/order');
 const notificationRouter = require('./routes/notification');
 const analyticsRouter = require('./routes/analytics');
@@ -15,10 +15,9 @@ const layoutRouter = require('./routes/layout');
 const passport = require('passport');
 const http = require('http');
 const initSocketServer = require('./socketServer');
-const UploadCertifcateRouter = require('./routes/uploadCertifcate');
+const uploadCertificateRouter = require('./routes/uploadCertificate');
 const contactRouter = require('./routes/contactUs');
 const chatRouter = require('./routes/chatgpt');
-
 
 const app = express();
 
@@ -55,19 +54,16 @@ cloudinary.config({
 
 app.use(
   '/api/v1',
-  router,
-  CourseRouter,
+  userRouter,
+  courseRouter,
   orderRouter,
   notificationRouter,
   analyticsRouter,
   layoutRouter,
-  UploadCertifcateRouter,
+  uploadCertificateRouter,
   contactRouter,
   chatRouter
 );
-
-
-
 
 app.use(ErrorMiddleware);
 
